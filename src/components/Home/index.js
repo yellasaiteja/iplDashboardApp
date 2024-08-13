@@ -1,58 +1,72 @@
 // Write your code here
-.home-route-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  background-image: url('https://assets.ccbp.in/frontend/react-js/ipl-dashboard-sm-bg.png');
-  background-size: cover;
-  min-height: 100vh;
-}
+import {Component} from 'react'
+import Loader from 'react-loader-spinner'
+import TeamCard from '../TeamCard'
+import './index.css'
 
-.team-list-container {
-  width: 90%;
-  max-width: 600px;
-}
+const teamsApiUrl = 'https://apis.ccbp.in/ipl'
 
-.ipl-dashboard-heading-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.ipl-logo {
-  width: 25px;
-  height: 40px;
-}
-
-.ipl-heading {
-  font-size: 36px;
-  margin-left: 12px;
-  font-family: 'Bree Serif';
-  color: #ffffff;
-}
-
-.teams-lists {
-  display: flex;
-  flex-wrap: wrap;
-  padding-left: 0px;
-}
-@media screen and (min-width: 768px) {
-  .home-route-container {
-    background-image: url('https://assets.ccbp.in/frontend/react-js/ipl-dashboard-lg-bg.png');
-  }
-  .team-list-container {
-    width: 90%;
-    max-width: 1110px;
+class Home extends Component {
+  state = {
+    isLoading: true,
+    teamsData: [],
   }
 
-  .ipl-logo {
-    width: 60px;
-    height: 90px;
+  componentDidMount() {
+    this.getTeams()
   }
 
-  .ipl-heading {
-    font-size: 72px;
-    margin-left: 16px;
+  getTeams = async () => {
+    const response = await fetch(teamsApiUrl)
+    const fetchedData = await response.json()
+    const formattedData = fetchedData.teams.map(team => ({
+      name: team.name,
+      id: team.id,
+      teamImageURL: team.team_image_url,
+    }))
+
+    this.setState({
+      teamsData: formattedData,
+      isLoading: false,
+    })
+  }
+
+  renderTeamLists = () => {
+    const {teamsData} = this.state
+
+    return (
+      <ul className="teams-lists">
+        {teamsData.map(team => (
+          <TeamCard teamDetails={team} key={team.id} />
+        ))}
+      </ul>
+    )
+  }
+
+  renderLoader = () => {
+    ;<div className="loader-container" data-testid="loader">
+      <Loader type="Oval" color="#ffffff" height={50} />
+    </div>
+  }
+
+  render() {
+    const {isLoading} = this.state
+    return (
+      <div className="home-route-container">
+        <div className="team-list-container">
+          <div className="ipl-dashboard-heading-container">
+            <img
+              src="https://assets.ccbp.in/frontend/react-js/ipl-logo-img.png"
+              alt="ipl logo"
+              className="ipl-logo"
+            />
+            <h1 className="ipl-heading">IPL Dshboard</h1>
+          </div>
+          {isLoading ? this.renderLoader() : this.renderTeamLists()}
+        </div>
+      </div>
+    )
   }
 }
+
+export default Home
